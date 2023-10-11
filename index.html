@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>물고기 키우기</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #f2f2f2;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            color: 'blue',
+        };
+
+        const food = [];
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function generateRandomFood() {
+            const newFood = {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 10 + 5,
+                color: getRandomColor(),
+            };
+            food.push(newFood);
+        }
+
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawFood() {
+            for (let i = 0; i < food.length; i++) {
+                ctx.beginPath();
+                ctx.arc(food[i].x, food[i].y, food[i].radius, 0, Math.PI * 2);
+                ctx.fillStyle = food[i].color;
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function movePlayer(event) {
+            const speed = 5;
+
+            switch (event.key) {
+                case 'ArrowUp':
+                    player.y -= speed;
+                    break;
+                case 'ArrowDown':
+                    player.y += speed;
+                    break;
+                case 'ArrowLeft':
+                    player.x -= speed;
+                    break;
+                case 'ArrowRight':
+                    player.x += speed;
+                    break;
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawFood();
+            drawPlayer();
+
+            for (let i = food.length - 1; i >= 0; i--) {
+                const dx = player.x - food[i].x;
+                const dy = player.y - food[i].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < player.radius + food[i].radius) {
+                    food.splice(i, 1);
+                    player.radius += 2;
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', movePlayer);
+        window.addEventListener('resize', resizeCanvas);
+
+        resizeCanvas();
+        setInterval(generateRandomFood, 1000);
+        gameLoop();
+    </script>
+</body>
+</html>
